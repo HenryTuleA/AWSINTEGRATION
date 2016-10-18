@@ -1,0 +1,149 @@
+<apex:page showHeader="true" sidebar="true" tabStyle="account" cache="false"   controller="DF2016_AWSUpload"  >
+<apex:includeScript value="/support/console/26.0/integration.js"/>
+<style>
+form {
+  padding: 20px;
+  border: 1px solid #0;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-box-shadow: 0 0 10px #cc;
+  -moz-box-shadow: 0 0 10px #ccc;
+  box-shadow: 0 0 10px #ccc;
+  background-image: -moz-linear-gradient(top, #ffffff, #f2f2f2);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f2f2f2));
+}
+
+#mainContent {
+  width: 380px;
+  float: left;
+  margin-left: 130px;
+  overflow: hidden;
+  padding-top: 155px;
+}
+
+h4.fileToUpload {
+  margin-top: 0.0em;
+  font-size: 16pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #ff;
+  margin-top: 1.5em;
+  margin-bottom: 0.3em;
+  font-family: DaxCompact-RegularRegular, Georgia, Helvetica, Times, 'Times New Roman' , serif;
+}
+.row {
+  padding-bottom: 5px;
+}
+input {
+  border: 1px solid #ffff;
+  font-size: 16px;
+  padding: 5px 10px 5px 10px;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-transition: all 0.5s ease-in-out;
+  -moz-transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
+}
+
+input[type=submit]{
+  opacity: 1.0;
+  background-image: -moz-linear-gradient(top, #ffffff, #dfdfdf);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#dfdfdf));
+  cursor: pointer;
+}
+
+
+/*.bg-fade {
+  display: none;
+  width: 100%; 
+  height: 100%;
+  position: fixed;
+  z-index: 10000;
+  background: #303030;
+  opacity: 0.5;
+  filter: alpha(opacity=50) !important;
+  top: 0;
+  left: 0;
+}
+
+.show-fade {
+  display: block;
+  z-index: 100 !important;
+}*/
+ /* {!awsKeySet.Name} */
+</style>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <div id ="mainContent">
+     <form action="https://df2016.s3-us-west-2.amazonaws.com/"  method="post" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden"  name="key"  id="key" /> 
+        <input type="hidden" name="AWSAccessKeyId" value="{!awsKeySet.AWS_AccessKey_Id__c}" /> 
+        <input type="hidden"  name="policy" value="{!policy}" /> 
+        <input type="hidden"  name="signature" value="{!signedPolicy}" /> 
+        <input type="hidden"  name="acl" value="{!acessType}" /> 
+        <input type="hidden"  name="Content-Type" value="{!Content_Type}" /> 
+        <input type="hidden" name="success_action_redirect" value="{!ForRedirect}" />
+        <h4 class="fileToUpload">Please select a file to upload</h4><br />
+        <div class="row">
+              <input type="file" size="50" name="file" id="file"   /> <!-- onchange="fileSelected();" -->
+        </div>
+        
+        <div id="fileName"></div>
+        <div id="fileSize"></div>
+        <div id="fileType"></div>
+        
+        <div class="row">
+          <input type="submit" value="Upload"  id="btn_submit" />
+          <input type="button" value="Back to Account {!accountNumber}"  id="cancel_submit"/>
+        </div> 
+    </form> 
+    
+    <apex:form >
+        <apex:actionFunction name="backtoParent" action="{!backtoCase}">
+            <apex:param name="myFaram" value="{!appParentId}"/>
+        </apex:actionFunction>       
+    </apex:form>
+  
+    </div>
+    <script>
+            $(document).ready(function () {                
+                var _requestBucket;
+                $('#btn_submit').prop('disabled', true);
+                
+                $("#file").click(function(event){
+                      $('#file').change(function() {
+                          if($(this).val() != '') {
+                               $('#btn_submit').prop('disabled', false);
+                            }
+                      });       
+                });
+                
+                
+                $("#btn_submit").click(function(event){
+                    //alert(1);
+                        event.preventDefault();
+                      var _file;
+              
+                     _file = $("#file").val().replace(/.+[\\\/]/, "");
+                     console.log('_file 2  =>  '+_file);
+                    _file = '{!objectname}'+"/"+'{!foldername}'+"/"+_file;
+                    console.log('_file3  =>  '+_file);
+                    $("#key").val(_file);
+                   $("#uploadForm").submit(); 
+                });
+                
+                 $("#cancel_submit").click(function(event){
+                   var idval = "{!$CurrentPage.parameters.parentIdForRedirect}";
+                  // alert(idval);
+                   backtoParent(idval);
+                        
+                });
+                
+               $("#file").val("");
+              
+         });
+
+   
+    </script>
+     
+</apex:page>
